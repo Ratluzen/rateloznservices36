@@ -8,24 +8,24 @@ import {
   Gamepad2, Smartphone, Monitor, Wifi, Zap, Gift, 
   Music, Video, Book, Car, Coffee, Shirt, Watch, 
   Globe, ShoppingBasket, Headphones, Camera,
-  Briefcase, Plane, Megaphone, Ban, Unlock, User,
+  Plane,
   Bell, Info, Star, ShoppingCart, ArrowUpRight, ArrowDownRight,
-  PieChart, Calendar, Flag, Tags, CircleDollarSign, RefreshCw, ClipboardList, Send, Link, CheckSquare,
-  MapPin, Mail, Phone, Shield, ArrowRight, Copy, PackageOpen, XCircle, Receipt, ToggleRight, ToggleLeft,
+  PieChart, Calendar, CircleDollarSign, ClipboardList,
+  PackageOpen,
   Facebook, Instagram, Twitter, Linkedin, Youtube, Twitch, 
   Code, Terminal, Database, Cloud, Bitcoin, Coins,
-  Key, Lock, Wrench, Hammer, Settings, Heart, Flame, Sun, Moon, CloudRain,
-  Truck, Anchor, Box, Crown, Diamond, Medal, Trophy,
-  Cpu, HardDrive, Mouse, Keyboard, Laptop, Tablet,
-  Router, Signal, Radio, Tv, Speaker, Mic,
-  Ticket, Film, Clapperboard, Image, Palette, Brush,
-  Dumbbell, Bike, Pizza, Utensils, Bed, Home, Building,
-  GraduationCap, School, BookOpen, Library,
-  LayoutGrid, Check, Settings2, LogOut
+  Key, Lock, Wrench, Settings, Heart, Flame,
+  Crown, Diamond, Medal, Trophy,
+  Cpu, Mouse, Keyboard, Laptop, Tablet,
+  Router, Mic,
+  Ticket, Clapperboard, Palette,
+  Dumbbell, Pizza, Bed, Home,
+  GraduationCap, School,
+  LogOut
 } from 'lucide-react';
 import { View, Product, Category, AppTerms, Banner, UserProfile, Announcement, Region, Denomination, Currency, Order, InventoryCode, CustomInputConfig, Transaction } from '../types';
-import { PREDEFINED_REGIONS, INITIAL_CURRENCIES } from '../constants';
-import InvoiceModal from '../components/InvoiceModal';
+import { INITIAL_CURRENCIES } from '../constants';
+
 import { productService, contentService, inventoryService, orderService, userService } from '../services/api';
 
 interface Props {
