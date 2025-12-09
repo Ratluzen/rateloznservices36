@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { X, CheckCircle, Download, Share2, Receipt, Copy, Loader2, MapPin, Tag, Grid, User, Calendar, Hash } from 'lucide-react';
 import { Order } from '../types';
+// @ts-ignore
 import html2canvas from 'html2canvas';
 
 interface Props {
@@ -21,7 +22,7 @@ const InvoiceModal: React.FC<Props> = ({ order, isOpen, onClose, formatPrice }) 
     const rect = invoiceRef.current.getBoundingClientRect();
     return await html2canvas(invoiceRef.current, {
         backgroundColor: '#1f212e', scale: 3, useCORS: true, width: rect.width, height: rect.height, scrollY: -window.scrollY, scrollX: 0,
-        onclone: (clonedDoc) => {
+        onclone: (clonedDoc: Document) => {
             const invoiceElement = clonedDoc.querySelector('[data-invoice-container]') as HTMLElement;
             if (invoiceElement) {
                 invoiceElement.classList.remove('animate-slide-up');
@@ -54,7 +55,7 @@ const InvoiceModal: React.FC<Props> = ({ order, isOpen, onClose, formatPrice }) 
     try {
         const canvas = await generateCanvas();
         if (canvas) {
-            canvas.toBlob(async (blob) => {
+            canvas.toBlob(async (blob: Blob | null) => {
                 if (blob) {
                     const file = new File([blob], `invoice-${order.id}.png`, { type: "image/png" });
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {

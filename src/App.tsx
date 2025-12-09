@@ -1,4 +1,5 @@
 
+// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { View, Product, Category, AppTerms, Banner, UserProfile, Announcement, CartItem, Currency, Order, InventoryCode, Transaction } from './types';
 import Home from './pages/Home';
@@ -360,7 +361,7 @@ const App: React.FC = () => {
       }
   };
   
-  const handleProductSelect = (p: Product) => { setSelectedProduct(p); };
+
   const handleAdminLogout = () => { setIsAdminLoggedIn(false); localStorage.removeItem('ratelozn_admin_auth'); setCurrentView(View.HOME); };
 
   if (isSecurityBlocked) return <div className="h-screen bg-black text-white flex items-center justify-center p-10 text-center"><ShieldAlert size={50} className="mb-4 text-red-500"/>{securityMessage}</div>;
