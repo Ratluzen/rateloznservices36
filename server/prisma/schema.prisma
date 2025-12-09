@@ -1,1 +1,153 @@
-ÿταΘ¬Κ‹«>Έ¬™
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String?  @unique
+  phone     String   @unique
+  password  String
+  balance   Float    @default(0)
+  role      String   @default("user")
+  status    String   @default("active")
+  ip        String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders        Order[]
+  transactions  Transaction[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  category    String
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  regions     Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orders Order[]
+
+  @@map("products")
+}
+
+model Order {
+  id              String   @id @default(uuid())
+  userId          String
+  productId       String
+  productName     String
+  productCategory String?
+  amount          Float
+  status          String   @default("pending")
+  regionName      String?
+  quantityLabel   String?
+  customInputValue String?
+  customInputLabel String?
+  deliveredCode   String?
+  paymentMethod   String   @default("wallet")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("orders")
+}
+
+model InventoryCode {
+  id              String   @id @default(uuid())
+  productId       String
+  regionId        String?
+  denominationId  String?
+  code            String
+  status          String   @default("available")
+  createdAt       DateTime @default(now())
+  usedAt          DateTime?
+
+  @@map("inventory_codes")
+}
+
+model Transaction {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  amount    Float
+  method    String?
+  status    String   @default("completed")
+  reference String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("transactions")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("info")
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+model Banner {
+  id        String   @id @default(uuid())
+  title     String?
+  subtitle  String?
+  desc      String?
+  imageUrl  String?
+  bg        String?
+  pattern   String?
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@map("banners")
+}
+
+model Category {
+  id       String  @id
+  name     String
+  icon     String
+  isActive Boolean @default(true)
+  order    Int     @default(0)
+
+  @@map("categories")
+}
+
+model AppSettings {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+
+  @@map("app_settings")
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  message   String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("announcements")
+}
