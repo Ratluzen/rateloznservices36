@@ -26,10 +26,17 @@ const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
     const stored = localStorage.getItem(key);
     if (!stored) return defaultValue;
     
-    const parsed = JSON.parse(stored);
+    let parsed;
+    try {
+      parsed = JSON.parse(stored);
+    } catch (e) {
+      console.error(`JSON parse error for ${key}`, e);
+      localStorage.removeItem(key);
+      return defaultValue;
+    }
     
-    // Validate that parsed data is not null/undefined
-    if (parsed === null || parsed === undefined) {
+    // Validate that parsed data is not null/undefined or an empty string
+    if (parsed === null || parsed === undefined || parsed === '') {
       console.warn(`Invalid data in ${key}, using default`);
       return defaultValue;
     }
@@ -109,7 +116,18 @@ const App: React.FC = () => {
   useEffect(() => { saveToStorage('user_transactions', transactions); }, [transactions]);
   useEffect(() => { if(currentUser) saveToStorage('current_user', currentUser); }, [currentUser]);
 
-  // --- Initialization & Resume Logic ---
+  // --- Helper for Safe JSON Parsing ---
+const safeJsonParse = (value: any, defaultValue: any = null) => {
+    if (typeof value !== 'string' || !value) return value || defaultValue;
+    try {
+        return JSON.parse(value);
+    } catch (e) {
+        console.error("Safe JSON Parse Error:", e, "Value:", value);
+        return defaultValue;
+    }
+};
+
+// --- Initialization & Resume Logic ---
   useEffect(() => {
     // 1. Initial Fetch on Mount
     fetchInitialData();
@@ -184,10 +202,10 @@ const App: React.FC = () => {
 
           const parsedProducts = prodsRes.data.map((p: any) => ({
              ...p,
-             regions: typeof p.regions === 'string' ? JSON.parse(p.regions) : p.regions,
-             denominations: typeof p.denominations === 'string' ? JSON.parse(p.denominations) : p.denominations,
-             apiConfig: typeof p.apiConfig === 'string' ? JSON.parse(p.apiConfig) : p.apiConfig,
-             customInput: typeof p.customInput === 'string' ? JSON.parse(p.customInput) : p.customInput,
+             regions: safeJsonParse(p.regions, p.regions),
+             denominations: safeJsonParse(p.denominations, p.denominations),
+             apiConfig: safeJsonParse(p.apiConfig, p.apiConfig),
+             customInput: safeJsonParse(p.customInput, p.customInput),
           }));
 
           // Only update if we got data back
@@ -218,7 +236,7 @@ const App: React.FC = () => {
       } catch (e) { console.log("Could not fetch orders (Offline) - Keeping cached orders"); }
   };
 
-  // --- Security Check (Android Only) ---
+  // --- Security Check (Android Only) --- (TEMPORARILY DISABLED FOR DEBUGGING)
   useEffect(() => {
     const checkSecurity = async () => {
       if (Capacitor.getPlatform() === 'android') {
@@ -235,7 +253,7 @@ const App: React.FC = () => {
         } catch (error) { console.error("Security Check Failed:", error); }
       }
     };
-    checkSecurity();
+    // checkSecurity();
   }, []);
 
   const balanceUSD = currentUser ? currentUser.balance : 0.00;
