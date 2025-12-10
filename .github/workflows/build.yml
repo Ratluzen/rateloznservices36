@@ -19,7 +19,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
       - name: Install Dependencies
         run: npm install
       - name: Build Web Assets
