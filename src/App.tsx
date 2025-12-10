@@ -24,18 +24,46 @@ import { authService, productService, orderService, contentService, userService,
 const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
   try {
     const stored = localStorage.getItem(key);
-    return stored ? JSON.parse(stored) : defaultValue;
+    if (!stored) return defaultValue;
+    
+    const parsed = JSON.parse(stored);
+    
+    // Validate that parsed data is not null/undefined
+    if (parsed === null || parsed === undefined) {
+      console.warn(`Invalid data in ${key}, using default`);
+      return defaultValue;
+    }
+    
+    // If default is array, ensure parsed is also array
+    if (Array.isArray(defaultValue) && !Array.isArray(parsed)) {
+      console.warn(`Expected array for ${key}, got ${typeof parsed}, using default`);
+      return defaultValue;
+    }
+    
+    return parsed;
   } catch (error) {
     console.error(`Error loading ${key} from storage`, error);
+    // Clear corrupted data
+    localStorage.removeItem(key);
     return defaultValue;
   }
 };
 
 const saveToStorage = (key: string, value: any) => {
   try {
+    // Don't save null or undefined
+    if (value === null || value === undefined) {
+      console.warn(`Attempted to save null/undefined to ${key}, skipping`);
+      return;
+    }
     localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
     console.error(`Error saving ${key} to storage`, error);
+    // If quota exceeded, clear old data
+    if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+      console.warn('Storage quota exceeded, clearing old data');
+      localStorage.clear();
+    }
   }
 };
 
@@ -113,25 +141,33 @@ const App: React.FC = () => {
   }, []);
 
   const checkAuthStatus = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-          try {
-              const res = await authService.getProfile();
-              const user = res.data;
-              const userData: UserProfile = {
-                  id: user._id,
-                  name: user.name,
-                  email: user.email,
-                  phone: user.phone || '',
-                  balance: user.balance,
-                  joinedDate: '', // Date usually handled by backend
-                  status: user.status === 'banned' ? 'banned' : 'active'
-              };
-              // Only update state if data changed (React handles shallow comparison usually, but good to be explicit if needed)
-              setCurrentUser(userData);
-              if(user.status !== 'banned') fetchUserOrders();
-          } catch (error) {
-              console.log("Auth check failed (Offline or Token Expired) - Keeping cached user data");
+      try {
+          const token = localStorage.getItem('token');
+          if (!token) {
+              setCurrentUser(null);
+              return;
+          }
+          
+          const res = await authService.getProfile();
+          const user = res.data;
+          const userData: UserProfile = {
+              id: user._id,
+              name: user.name,
+              email: user.email,
+              phone: user.phone || '',
+              balance: user.balance,
+              joinedDate: '',
+              status: user.status === 'banned' ? 'banned' : 'active'
+          };
+          setCurrentUser(userData);
+          if(user.status !== 'banned') fetchUserOrders();
+      } catch (error) {
+          console.log("Auth check failed (Offline or Token Expired) - Keeping cached user data");
+          // If token is invalid, clear it
+          if (error instanceof Error && error.message.includes('401')) {
+              localStorage.removeItem('token');
+              localStorage.removeItem('current_user');
+              setCurrentUser(null);
           }
       }
   };
