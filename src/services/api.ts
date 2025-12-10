@@ -7,7 +7,7 @@ import axios from 'axios';
 // you should set the VITE_API_URL environment variable to your real server address (e.g., https://ratelozn-api.render.com/api)
 // If not set, it defaults to localhost (which only works in emulator/simulator if mapped correctly).
 
-const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:5000/api'; 
+const API_URL = (import.meta as any).env.VITE_API_URL || 'https://ratelozen-production.up.railway.app/api'; 
 
 console.log('Connecting to API:', API_URL);
 
