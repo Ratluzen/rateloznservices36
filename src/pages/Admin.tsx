@@ -175,6 +175,9 @@ const Admin: React.FC<Props> = ({
   const [invNewCodes, setInvNewCodes] = useState<string>('');
 
   const analytics = useMemo(() => {
+    if (!orders || !users || !products || !categories) {
+      return { totalRevenue: 0, totalOrders: 0, totalUsers: 0, totalProducts: 0, activeUsers: 0, salesChart: [], maxChartValue: 10, categoryStats: [] };
+    }
     const totalRevenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.amount, 0);
     const activeUsers = users.filter(u => u.status === 'active').length;
     const last7Days = [...Array(7)].map((_, i) => {
@@ -205,11 +208,11 @@ const Admin: React.FC<Props> = ({
     return { totalRevenue, totalOrders: orders.length, totalUsers: users.length, totalProducts: products.length, activeUsers, salesChart, maxChartValue, categoryStats };
   }, [orders, users, products, categories]);
 
-  const recentOrders = orders.slice(0, 5).map(o => ({
-      id: o.id, user: o.userName, item: o.productName, price: `$${o.amount}`, status: o.status, time: o.date.split(',')[1]
+  const recentOrders = (orders || []).slice(0, 5).map(o => ({
+      id: o.id, user: o.userName, item: o.productName, price: `$${o.amount}`, status: o.status, time: o.date?.split(',')[1] || ''
   }));
   const adminFormatPrice = (price: number) => `$ ${price.toFixed(2)}`;
-  const filteredOrders = orders.filter(o => {
+  const filteredOrders = (orders || []).filter(o => {
       const matchesStatus = orderFilter === 'all' || o.status === orderFilter;
       const query = orderSearchQuery.toLowerCase();
       const matchesSearch = o.id.toLowerCase().includes(query) || (o.userName || '').toLowerCase().includes(query);
@@ -435,15 +438,15 @@ const Admin: React.FC<Props> = ({
       setTempDenomLabel(''); setTempDenomPrice('');
   };
   const removeDenomination = (id: string) => setProdForm({ ...prodForm, denominations: (prodForm.denominations || []).filter(d => d.id !== id) });
-  const selectedProductObj = products.find(p => p.id === invSelectedProduct);
-  const getFilteredInventory = () => inventory.filter(i => {
+  const selectedProductObj = (products || []).find(p => p.id === invSelectedProduct);
+  const getFilteredInventory = () => (inventory || []).filter(i => {
       if (!invSelectedProduct) return true;
       return i.productId === invSelectedProduct && (!invSelectedRegion || i.regionId === invSelectedRegion) && (!invSelectedDenom || i.denominationId === invSelectedDenom);
   });
   const handleOpenFulfillment = (order: Order) => { setFulfillmentOrder(order); setFulfillmentCode(''); };
   const handleInitiateCancel = (order: Order) => { setCancellationOrder(order); setCancellationReason(''); };
   const handleEditBanner = (banner: Banner) => { setEditingBanner(banner); setBannerForm({ ...banner }); setShowBannerModal(true); };
-  const handleSearchUser = () => { const user = users.find(u => u.id === searchUserId || u.email === searchUserId); if(user) setFoundUser(user); else alert('غير موجود'); };
+  const handleSearchUser = () => { const user = (users || []).find(u => u.id === searchUserId || u.email === searchUserId); if(user) setFoundUser(user); else alert('غير موجود'); };
   const handleClearSearch = () => { setFoundUser(null); setSearchUserId(''); setAmountToAdd(''); };
   const handleEditAnnouncement = (ann: Announcement) => { setEditingAnnouncement(ann); setAnnounceTitle(ann.title); setAnnounceMsg(ann.message); setAnnounceType(ann.type); setShowAnnouncementModal(true); };
   const handleUpdateRate = (code: string, newRate: string) => {
@@ -474,8 +477,8 @@ const Admin: React.FC<Props> = ({
             <div className="text-center text-gray-500 py-10">
                <p>الإحصائيات متصلة بالخادم الآن</p>
                <div className="grid grid-cols-2 gap-3 mt-4">
-                   <div className="bg-[#242636] p-4 rounded-xl"><p className="text-gray-400 text-xs">المنتجات</p><p className="text-2xl font-bold text-white">{products.length}</p></div>
-                   <div className="bg-[#242636] p-4 rounded-xl"><p className="text-gray-400 text-xs">الطلبات</p><p className="text-2xl font-bold text-white">{orders.length}</p></div>
+                   <div className="bg-[#242636] p-4 rounded-xl"><p className="text-gray-400 text-xs">المنتجات</p><p className="text-2xl font-bold text-white">{(products || []).length}</p></div>
+                   <div className="bg-[#242636] p-4 rounded-xl"><p className="text-gray-400 text-xs">الطلبات</p><p className="text-2xl font-bold text-white">{(orders || []).length}</p></div>
                </div>
             </div>
         )}
@@ -484,7 +487,7 @@ const Admin: React.FC<Props> = ({
           <div className="space-y-4">
              <button onClick={() => { setEditingProduct(null); setProdForm({}); setShowProductModal(true); }} className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-black p-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-lg hover:shadow-yellow-400/20 transition-all"><Plus size={20} /> إضافة منتج جديد</button>
              <div className="space-y-3">
-               {products.map(p => (
+               {(products || []).map(p => (
                  <div key={p.id} className="bg-[#242636] p-3 rounded-xl flex items-center gap-3 border border-gray-700 hover:border-gray-500 transition-colors relative">
                     <div className={`w-14 h-14 rounded-lg bg-gradient-to-br ${p.imageColor} flex-shrink-0 relative overflow-hidden`}>{p.imageUrl && <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />}</div>
                     <div className="flex-1">
